@@ -16,7 +16,7 @@ Every application MUST include these files in the following order:
 HTML TEMPLATE IMPLEMENTATION
 ============================
 
-1. REPLACE the following placeholders in template.html EXACTLY as specified:
+1. REPLACE the following placeholders in index.html EXACTLY as specified:
 
    a) <!-- APP_TITLE -->
       Replace with your application's page title

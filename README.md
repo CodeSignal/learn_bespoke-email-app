@@ -11,7 +11,7 @@ The core CSS framework providing:
 - Reusable component styles (buttons, forms, modals, cards)
 - Responsive design utilities
 
-### 2. `template.html`
+### 2. `index.html`
 A base HTML template that includes:
 - Navigation header with app name and help button
 - Main layout structure (sidebar + content area)
@@ -276,7 +276,7 @@ document.getElementById('btn-help').addEventListener('helpModal:close', (e) => {
 ```
 generalised/
 ├── bespoke.css              # Core CSS framework
-├── template.html            # Base HTML template
+├── index.html               # Base HTML template
 ├── help-modal.js           # Help modal JavaScript
 ├── help-content-template.html # Help content template
 └── README.md               # This file
