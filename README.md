@@ -98,6 +98,47 @@ modal.updateContent(newHelpContent);
 modal.destroy();
 ```
 
+## Server
+
+This template includes a local development server (`server.js`) that provides:
+- Static file serving for your application
+- WebSocket support for real-time messaging
+- A REST API for triggering client-side alerts
+
+### Starting the Server
+
+```bash
+node server.js
+```
+
+The server will start on `http://localhost:3000` by default.
+
+### WebSocket Messaging API
+
+The server provides a `POST /message` endpoint that allows you to send real-time messages to connected clients. This can be used to signal changes in the client during events like "Run" or "Submit". When a message is sent, the preview window with the application open will display an alert with the message. 
+
+It uses the `ws` package, so if you want to use it, install `ws`.
+
+```
+npm install ws
+```
+
+#### Endpoint: `POST /message`
+
+**Request Format:**
+```json
+{
+  "message": "Your message here"
+}
+```
+
+**Example using curl:**
+```bash
+curl -X POST http://localhost:3000/message \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello from the server!"}'
+```
+
 ## File Structure
 
 ```

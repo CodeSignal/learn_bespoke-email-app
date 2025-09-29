@@ -3,7 +3,22 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
+// Try to load WebSocket module, fallback if not available
+let WebSocket = null;
+let isWebSocketAvailable = false;
+try {
+  WebSocket = require('ws');
+  isWebSocketAvailable = true;
+  console.log('WebSocket support enabled');
+} catch (error) {
+  console.log('WebSocket support disabled (ws package not installed)');
+  console.log('Install with: npm install ws');
+}
+
 const PORT = 3000;
+
+// Track connected WebSocket clients
+const wsClients = new Set();
 
 // MIME types for different file extensions
 const mimeTypes = {
@@ -39,10 +54,69 @@ function serveFile(filePath, res) {
   });
 }
 
+// Handle POST requests
+function handlePostRequest(req, res) {
+  const parsedUrl = url.parse(req.url, true);
+  
+  if (parsedUrl.pathname === '/message') {
+    let body = '';
+    
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const message = data.message;
+        
+        if (!message) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Message is required' }));
+          return;
+        }
+        
+        // Check if WebSocket is available
+        if (!isWebSocketAvailable) {
+          res.writeHead(503, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ 
+            error: 'WebSocket functionality not available', 
+            details: 'Install the ws package with: npm install ws' 
+          }));
+          return;
+        }
+        
+        // Broadcast message to all connected WebSocket clients
+        wsClients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'message', message: message }));
+          }
+        });
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, clientCount: wsClients.size }));
+        
+      } catch (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      }
+    });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
 // Create HTTP server
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
   let pathname = parsedUrl.pathname;
+  
+  // Handle POST requests
+  if (req.method === 'POST') {
+    handlePostRequest(req, res);
+    return;
+  }
 
   // Default to index.html for root path
   if (pathname === '/') {
@@ -72,9 +146,34 @@ const server = http.createServer((req, res) => {
   });
 });
 
+// Create WebSocket server only if WebSocket is available
+if (isWebSocketAvailable) {
+  const wss = new WebSocket.Server({ server });
+
+  wss.on('connection', (ws) => {
+    console.log('New WebSocket client connected');
+    wsClients.add(ws);
+    
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+      wsClients.delete(ws);
+    });
+    
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+      wsClients.delete(ws);
+    });
+  });
+}
+
 // Start server
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+  if (isWebSocketAvailable) {
+    console.log(`WebSocket server running on the same port`);
+  } else {
+    console.log(`WebSocket functionality disabled - install 'ws' package to enable`);
+  }
   console.log(`Serving files from: ${__dirname}`);
   console.log('Press Ctrl+C to stop the server');
 });
