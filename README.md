@@ -36,7 +36,7 @@ A template for creating consistent help content:
 
 ### Setting Up a New Application
 
-1. **Fork the repository**
+1. **Clone the repository**
 2. **Customize the HTML template** by replacing placeholders:
    - `<!-- APP_TITLE -->` - Your application title
    - `<!-- APP_NAME -->` - Your application name (appears in header)
@@ -108,12 +108,41 @@ This template includes a local development server (`server.js`) that provides:
 ### Starting the Server
 
 ```bash
+# Local development
 npm run start:dev   # Vite + API for local development
+# Production
 npm run build       # Create production build in dist/
 npm run start:prod  # Serve built assets from dist/
 ```
 
-The server will start on `http://localhost:3000` by default. `start:prod` expects `dist/` to exist (created via `npm run build`).
+
+### Environment Variables
+
+The server supports the following environment variables:
+
+- **`PORT`** - Server port number
+  - Development: Can be set to any port (e.g., `PORT=3001`), defaulting to `3000`
+  - Production: Ignored (always `3000` when `IS_PRODUCTION=true`)
+
+- **`IS_PRODUCTION`** - Enables production mode
+  - Set to `'true'` to enable production mode
+  - When enabled:
+    - Server serves static files from `dist/` directory
+    - Port is forced to `3000`
+    - Requires `dist/` directory to exist (throws error if missing)
+
+
+### Vite Build System
+
+This project uses [Vite](https://vitejs.dev/) as the build tool for fast development and optimized production builds.
+
+#### Build Process
+
+Running `npm run build` executes `vite build`, which:
+- Reads source files from the `client/` directory (configured in `vite.config.js`)
+- Processes and bundles JavaScript, CSS, and other assets
+- Outputs optimized production files to the `dist/` directory
+- Generates hashed filenames for cache busting
 
 ### WebSocket Messaging API
 
