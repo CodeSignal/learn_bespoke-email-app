@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="../design-system/components/input/input.css">
   <link rel="stylesheet" href="../design-system/components/dropdown/dropdown.css">
   <link rel="stylesheet" href="../design-system/components/tags/tags.css">
+  <link rel="stylesheet" href="../design-system/components/modal/modal.css">
 
   <!-- Template-specific components (layout, utilities, temporary components) -->
   <link rel="stylesheet" href="../bespoke-template.css" />
@@ -28,9 +29,8 @@
 <body class="bespoke">
   <!-- Navigation Header -->
   <header class="header">
-    <h1>Component Showcase</h1>
+    <h1 class="heading-small">Component Showcase</h1>
     <div class="spacer"></div>
-    <div id="status" class="status">Ready</div>
     <button id="btn-help" class="button button-text">Help</button>
   </header>
 
@@ -39,15 +39,15 @@
     <!-- Sidebar with Input Controls -->
     <aside class="sidebar">
       <div class="sidebar-section">
-        <h2>Controls</h2>
+        <h2 class="heading-small">Controls</h2>
 
         <div class="control-group">
-          <label for="counter-label">Counter Label</label>
+          <label for="counter-label" class="body-small">Counter Label</label>
           <input type="text" id="counter-label" class="input" placeholder="Enter label..." value="Counter">
         </div>
 
         <div class="control-group">
-          <label>Increment Amount</label>
+          <label class="body-small">Increment Amount</label>
           <div id="increment-dropdown" style="width: 100%;"></div>
         </div>
 
@@ -67,7 +67,7 @@
       <div class="display-container">
         <!-- Counter Display Box -->
         <div class="box card counter-display">
-          <h2 id="display-label">Counter</h2>
+          <h2 id="display-label" class="heading-small">Counter</h2>
           <div class="counter-value" id="counter-value">0</div>
         </div>
 
@@ -80,11 +80,11 @@
 
         <!-- Settings Display -->
         <div class="box card settings-display">
-          <h3>Current Settings</h3>
-          <div class="setting-item">
+          <h3 class="heading-xxxsmall">Current Settings</h3>
+          <div class="setting-item body-small">
             <strong>Label:</strong> <span id="display-label-value">Counter</span>
           </div>
-          <div class="setting-item">
+          <div class="setting-item body-small">
             <strong>Increment:</strong> <span id="display-increment-value">1</span>
           </div>
         </div>
@@ -92,13 +92,8 @@
     </div>
   </main>
 
-  <!-- Help Modal (automatically managed by help-modal.js) -->
-  <!-- The modal structure is created dynamically by the JavaScript -->
-
   <!-- Core Scripts -->
   <script type="module" src="../design-system/components/dropdown/dropdown.js"></script>
-  <script src="../help-modal.js"></script>
-  <script src="../app.js"></script>
-  <script src="./example-app.js"></script>
+  <script type="module" src="./example-app.js"></script>
 </body>
 </html>

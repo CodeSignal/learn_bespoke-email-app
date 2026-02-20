@@ -1,23 +1,17 @@
 // example-app.js
 // Interactive Component Showcase Application
 
-(function() {
-  const status = document.getElementById('status');
+import Modal from '../design-system/components/modal/modal.js';
 
-  // App state
-  let counterValue = 0;
-  let incrementAmount = 1;
-  let counterLabel = 'Counter';
-  let dropdownInstance = null;
+// App state
+let counterValue = 0;
+let incrementAmount = 1;
+let counterLabel = 'Counter';
+let dropdownInstance = null;
+let helpModal = null;
 
-  function setStatus(msg) {
-    if (status) {
-      status.textContent = msg;
-    }
-  }
-
-  // Update counter display
-  function updateCounterDisplay() {
+// Update counter display
+function updateCounterDisplay() {
     const counterDisplay = document.getElementById('counter-value');
     const labelDisplay = document.getElementById('display-label');
     const labelValueDisplay = document.getElementById('display-label-value');
@@ -41,10 +35,10 @@
 
     // Update status tags
     updateStatusTags();
-  }
+}
 
-  // Update status tags based on counter value
-  function updateStatusTags() {
+// Update status tags based on counter value
+function updateStatusTags() {
     const primaryTag = document.getElementById('status-tag-primary');
     const positiveTag = document.getElementById('status-tag-positive');
     const negativeTag = document.getElementById('status-tag-negative');
@@ -62,31 +56,28 @@
       if (positiveTag) positiveTag.style.display = 'none';
       if (negativeTag) negativeTag.style.display = 'none';
     }
-  }
+}
 
-  // Increment counter
-  function incrementCounter() {
+// Increment counter
+function incrementCounter() {
     counterValue += incrementAmount;
     updateCounterDisplay();
-    setStatus('Counter incremented');
-  }
+}
 
-  // Decrement counter
-  function decrementCounter() {
+// Decrement counter
+function decrementCounter() {
     counterValue -= incrementAmount;
     updateCounterDisplay();
-    setStatus('Counter decremented');
-  }
+}
 
-  // Reset counter
-  function resetCounter() {
+// Reset counter
+function resetCounter() {
     counterValue = 0;
     updateCounterDisplay();
-    setStatus('Counter reset');
-  }
+}
 
-  // Initialize dropdown component
-  function initializeDropdown() {
+// Initialize dropdown component
+function initializeDropdown() {
     if (typeof window.Dropdown === 'undefined') {
       console.error('Dropdown class not found. Make sure dropdown.js is loaded.');
       return;
@@ -107,16 +98,15 @@
         onSelect: (value) => {
           incrementAmount = parseInt(value, 10);
           updateCounterDisplay();
-          setStatus(`Increment amount set to ${incrementAmount}`);
         }
       });
     } catch (error) {
       console.error('Error initializing dropdown:', error);
     }
-  }
+}
 
-  // Initialize event listeners
-  function initializeEventListeners() {
+// Initialize event listeners
+function initializeEventListeners() {
     // Sidebar controls
     const btnIncrement = document.getElementById('btn-increment');
     const btnDecrement = document.getElementById('btn-decrement');
@@ -143,59 +133,59 @@
       counterLabelInput.addEventListener('input', (e) => {
         counterLabel = e.target.value || 'Counter';
         updateCounterDisplay();
-        setStatus('Label updated');
       });
     }
-  }
+}
 
-  // Initialize help modal
-  async function initializeHelpModal() {
+// Initialize help modal
+async function initializeHelpModal() {
     try {
       const response = await fetch('./help-content.html');
       const helpContent = await response.text();
 
-      if (typeof HelpModal !== 'undefined') {
-        HelpModal.init({
-          triggerSelector: '#btn-help',
-          content: helpContent,
-          theme: 'auto'
+      // Create help modal with actual content
+      helpModal = Modal.createHelpModal({
+        title: 'Help / User Guide',
+        content: helpContent
+      });
+
+      // Bind help button click handler
+      const helpButton = document.getElementById('btn-help');
+      if (helpButton) {
+        helpButton.addEventListener('click', () => {
+          helpModal.open();
         });
-      } else {
-        console.error('HelpModal not found. Make sure help-modal.js is loaded.');
       }
     } catch (error) {
       console.error('Failed to load help content:', error);
-      if (typeof HelpModal !== 'undefined') {
-        HelpModal.init({
-          triggerSelector: '#btn-help',
-          content: '<p>Help content could not be loaded. Please check that help-content.html exists.</p>',
-          theme: 'auto'
+      // Fallback to placeholder content
+      helpModal = Modal.createHelpModal({
+        title: 'Help / User Guide',
+        content: '<p>Help content could not be loaded. Please check that help-content.html exists.</p>'
+      });
+
+      // Bind help button click handler
+      const helpButton = document.getElementById('btn-help');
+      if (helpButton) {
+        helpButton.addEventListener('click', () => {
+          helpModal.open();
         });
       }
     }
-  }
+}
 
-  // Initialize everything when DOM is ready
-  function initialize() {
-    setStatus('Loading...');
+// Initialize everything when DOM is ready
+async function initialize() {
+  initializeEventListeners();
+  await initializeHelpModal();
+  setTimeout(() => {
+    initializeDropdown();
+    updateCounterDisplay();
+  }, 100);
+}
 
-    // Initialize event listeners
-    initializeEventListeners();
-
-    // Initialize help modal
-    initializeHelpModal();
-
-    // Initialize dropdown after a short delay to ensure Dropdown class is loaded
-    setTimeout(() => {
-      initializeDropdown();
-      updateCounterDisplay();
-      setStatus('Ready');
-    }, 100);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
-  } else {
-    initialize();
-  }
-})();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  initialize();
+}
