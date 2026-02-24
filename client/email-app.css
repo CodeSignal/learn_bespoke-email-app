@@ -14,6 +14,15 @@ html, body.bespoke {
   overflow: hidden;
 }
 
+/* Compose button in sidebar (used in embedded/module mode) */
+.bespoke .sidebar-compose {
+  padding: var(--UI-Spacing-spacing-ms) var(--UI-Spacing-spacing-ms) 0;
+}
+
+.bespoke .sidebar-compose .button {
+  width: 100%;
+}
+
 /* ===== FOLDER SIDEBAR ===== */
 
 .bespoke .email-sidebar {

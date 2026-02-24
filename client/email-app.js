@@ -222,6 +222,8 @@ let emails = [];
 let currentFolder = 'inbox';
 let selectedEmailId = null;
 let nextId = 100;
+let _abortController = null;
+let _context = {};
 
 function loadEmails() {
   try {
@@ -378,6 +380,10 @@ function selectEmail(id) {
 
   renderEmailList();
   renderEmailDetail();
+
+  if (email && _context.emit) {
+    _context.emit('email:opened', { emailId: email.id, subject: email.subject });
+  }
 }
 
 function escapeHtml(str) {
@@ -422,6 +428,10 @@ function sendEmail() {
   closeCompose();
   updateFolderCounts();
   if (currentFolder === 'sent') renderEmailList();
+
+  if (_context.emit) {
+    _context.emit('email:sent', { to, subject, body: body.substring(0, 200) });
+  }
 }
 
 function saveDraft() {
@@ -494,7 +504,11 @@ function switchFolder(folder) {
   renderEmailDetail();
 }
 
-function initEmailApp() {
+export function init(context = {}) {
+  _context = context;
+  _abortController = new AbortController();
+  const signal = _abortController.signal;
+
   loadEmails();
   updateFolderCounts();
   renderEmailList();
@@ -503,7 +517,7 @@ function initEmailApp() {
   document.getElementById('folder-list').addEventListener('click', (e) => {
     const item = e.target.closest('.folder-item');
     if (item) switchFolder(item.dataset.folder);
-  });
+  }, { signal });
 
   document.getElementById('email-list').addEventListener('click', (e) => {
     const starBtn = e.target.closest('.email-item-star');
@@ -514,23 +528,23 @@ function initEmailApp() {
     }
     const item = e.target.closest('.email-item');
     if (item) selectEmail(Number(item.dataset.id));
-  });
+  }, { signal });
 
-  document.getElementById('btn-compose').addEventListener('click', () => openCompose());
+  document.getElementById('btn-compose').addEventListener('click', () => openCompose(), { signal });
 
-  document.getElementById('btn-compose-close').addEventListener('click', closeCompose);
-  document.getElementById('btn-discard').addEventListener('click', closeCompose);
+  document.getElementById('btn-compose-close').addEventListener('click', closeCompose, { signal });
+  document.getElementById('btn-discard').addEventListener('click', closeCompose, { signal });
 
   document.getElementById('compose-overlay').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeCompose();
-  });
+  }, { signal });
 
   document.getElementById('compose-form').addEventListener('submit', (e) => {
     e.preventDefault();
     sendEmail();
-  });
+  }, { signal });
 
-  document.getElementById('btn-save-draft').addEventListener('click', saveDraft);
+  document.getElementById('btn-save-draft').addEventListener('click', saveDraft, { signal });
 
   document.getElementById('btn-reply').addEventListener('click', () => {
     const email = emails.find(e => e.id === selectedEmailId);
@@ -544,37 +558,75 @@ function initEmailApp() {
       subject: email.subject.startsWith('Re:') ? email.subject : `Re: ${email.subject}`,
       body: `\n\n--- Original Message ---\nFrom: ${email.from}\nDate: ${new Date(email.date).toLocaleString()}\n\n${email.body}`,
     });
-  });
+  }, { signal });
 
   document.getElementById('btn-delete-detail').addEventListener('click', () => {
     if (selectedEmailId) deleteEmail(selectedEmailId);
-  });
+  }, { signal });
 
   document.getElementById('btn-star-detail').addEventListener('click', () => {
     if (selectedEmailId) toggleStar(selectedEmailId);
-  });
+  }, { signal });
 
   document.getElementById('btn-back').addEventListener('click', () => {
     selectedEmailId = null;
     document.querySelector('.email-layout')?.classList.remove('show-detail');
     renderEmailList();
     renderEmailDetail();
-  });
+  }, { signal });
 
   document.getElementById('search-input').addEventListener('input', () => {
     renderEmailList();
-  });
+  }, { signal });
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       const overlay = document.getElementById('compose-overlay');
-      if (!overlay.hidden) closeCompose();
+      if (overlay && !overlay.hidden) closeCompose();
     }
-  });
+  }, { signal });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initEmailApp);
-} else {
-  initEmailApp();
+export function destroy() {
+  if (_abortController) {
+    _abortController.abort();
+    _abortController = null;
+  }
+  emails = [];
+  currentFolder = 'inbox';
+  selectedEmailId = null;
+  nextId = 100;
+}
+
+export function onAction(action) {
+  if (action.type === 'add-email') {
+    const p = action.payload || {};
+    const email = {
+      id: nextId++,
+      folder: p.folder || 'inbox',
+      from: p.from || 'unknown@example.com',
+      to: p.to || 'me@example.com',
+      subject: p.subject || '(No subject)',
+      body: p.body || '',
+      date: p.date || new Date().toISOString(),
+      read: false,
+      starred: p.starred || false,
+    };
+    emails.push(email);
+    saveEmails();
+    updateFolderCounts();
+    if (currentFolder === (p.folder || 'inbox')) renderEmailList();
+  } else if (action.type === 'mark-unread') {
+    const email = emails.find(e => e.id === action.payload?.emailId);
+    if (email) {
+      email.read = false;
+      saveEmails();
+      updateFolderCounts();
+      renderEmailList();
+    }
+  }
+}
+
+export function onMessage(message) {
+  console.log('Email app received message:', message);
 }
