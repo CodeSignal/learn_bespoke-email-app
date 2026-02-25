@@ -8,7 +8,7 @@
     "start:prod": "IS_PRODUCTION=true node server.js",
     "start:dev": "concurrently \"npm run dev:vite\" \"npm run dev:api\"",
     "dev:vite": "vite",
-    "dev:api": "PORT=3000 node server.js",
+    "dev:api": "PORT=3001 node server.js",
     "build": "vite build",
     "build:module": "vite build --config vite.config.module.js"
   },
