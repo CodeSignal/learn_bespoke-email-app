@@ -16,14 +16,14 @@ try {
 }
 
 const DIST_DIR = path.join(__dirname, 'dist');
-// Check if IS_PRODUCTION is set to true
+const STATIC_DIR = process.env.SERVE_DIR
+  ? path.join(__dirname, process.env.SERVE_DIR)
+  : DIST_DIR;
 const isProduction = process.env.IS_PRODUCTION === 'true';
-// In production mode, dist directory must exist
-if (isProduction && !fs.existsSync(DIST_DIR)) {
-  throw new Error(`Production mode enabled but dist directory does not exist: ${DIST_DIR}`);
+if (isProduction && !fs.existsSync(STATIC_DIR)) {
+  throw new Error(`Production mode enabled but serve directory does not exist: ${STATIC_DIR}`);
 }
-// Force port 3000 in production, otherwise use PORT environment variable or default to 3000
-const PORT = isProduction ? 3000 : (process.env.PORT || 3000);
+const PORT = process.env.PORT || 3000;
 
 // Track connected WebSocket clients
 const wsClients = new Set();
@@ -129,17 +129,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // In production mode, serve static files from dist directory
   if (isProduction) {
-    // Strip leading slashes so path.join/resolve can't ignore DIST_DIR
-    let filePath = path.join(DIST_DIR, pathName.replace(/^\/+/, ''));
+    let filePath = path.join(STATIC_DIR, pathName.replace(/^\/+/, ''));
 
-    // Security check - prevent directory traversal
-    const resolvedDistDir = path.resolve(DIST_DIR);
+    const resolvedStaticDir = path.resolve(STATIC_DIR);
     const resolvedFilePath = path.resolve(filePath);
-    const relativePath = path.relative(resolvedDistDir, resolvedFilePath);
+    const relativePath = path.relative(resolvedStaticDir, resolvedFilePath);
 
-    // Reject if path tries to traverse outside the base directory
     if (relativePath.startsWith('..')) {
       res.writeHead(403, { 'Content-Type': 'text/plain' });
       res.end('Forbidden');
@@ -184,7 +180,7 @@ if (isWebSocketAvailable) {
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   if (isProduction) {
-    console.log(`Serving static files from: ${DIST_DIR}`);
+    console.log(`Serving static files from: ${STATIC_DIR}`);
   } else {
     console.log(`Development mode - static files served by Vite`);
   }
