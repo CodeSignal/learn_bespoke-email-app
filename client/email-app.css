@@ -140,6 +140,19 @@ html, body.bespoke {
 
 .bespoke .email-item.unread {
   background: var(--Colors-Backgrounds-Main-Default);
+  padding-left: calc(var(--UI-Spacing-spacing-ml) + 10px);
+}
+
+.bespoke .email-item.unread::before {
+  content: '';
+  position: absolute;
+  left: var(--UI-Spacing-spacing-s);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--Colors-Primary-Default);
 }
 
 .bespoke .email-item.unread .email-item-sender,
