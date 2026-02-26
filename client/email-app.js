@@ -18,7 +18,7 @@ Could we schedule a meeting this Thursday to go over the details? I'd love to ge
 
 Best regards,
 Alice`,
-    date: '2026-02-23T09:15:00',
+    date: '2026-02-21T09:15:00',
     read: false,
     starred: true,
   },
@@ -161,25 +161,6 @@ Thanks!`,
     starred: false,
   },
   {
-    id: 8,
-    folder: 'drafts',
-    from: 'me@example.com',
-    to: 'hr@example.com',
-    subject: 'Vacation Request - March',
-    body: `Hi HR Team,
-
-I would like to request time off from March 10-14, 2026.
-
-I have ensured that my current projects will be covered during my absence and have briefed my team lead.
-
-Please let me know if you need any additional information.
-
-Thank you,`,
-    date: '2026-02-20T15:00:00',
-    read: true,
-    starred: false,
-  },
-  {
     id: 9,
     folder: 'inbox',
     from: 'GitHub <notifications@github.com>',
@@ -216,6 +197,130 @@ Sophia`,
     read: true,
     starred: false,
   },
+  {
+    id: 11,
+    folder: 'inbox',
+    from: 'Sarah Chen <sarah.chen@example.com>',
+    to: 'me@example.com',
+    subject: 'Design review feedback — Dashboard v2',
+    body: `Hi,
+
+I've reviewed the latest dashboard mockups and left detailed comments in Figma. Overall the direction looks great — the new card layout is much cleaner.
+
+A few things to revisit:
+- The contrast ratio on the secondary labels needs work
+- Can we align the chart legend to the left instead of bottom?
+- The empty state illustration feels a bit generic
+
+Happy to hop on a quick call if you'd prefer to walk through it together.
+
+Thanks,
+Sarah`,
+    date: '2026-02-22T11:20:00',
+    read: false,
+    starred: false,
+  },
+  {
+    id: 12,
+    folder: 'inbox',
+    from: 'Marcus Thompson <marcus@example.com>',
+    to: 'me@example.com',
+    subject: 'Server migration — weekend downtime heads-up',
+    body: `Team,
+
+Quick heads-up: we'll be migrating the primary database cluster to the new region this Saturday from 2 AM to 6 AM UTC.
+
+What to expect:
+- Read-only mode from 2:00–2:30 AM
+- Full downtime from 2:30–4:00 AM (estimated)
+- Gradual traffic ramp-up from 4:00–6:00 AM
+
+The staging environment will remain available throughout. If you have any scheduled jobs or cron tasks that write to the DB, please pause them for the window.
+
+I'll send a reminder Friday evening. Reach out if you have concerns.
+
+Marcus`,
+    date: '2026-02-21T17:45:00',
+    read: true,
+    starred: true,
+  },
+  {
+    id: 13,
+    folder: 'inbox',
+    from: 'LinkedIn <notifications@linkedin.com>',
+    to: 'me@example.com',
+    subject: 'You have 5 new connection requests',
+    body: `You have new connection requests waiting for you:
+
+- Jordan Kim, Product Designer at Horizon Inc.
+- Priya Patel, VP of Product at TechCo
+- 3 others
+
+Log in to review and accept your pending requests.
+
+Best,
+The LinkedIn Team`,
+    date: '2026-02-21T08:00:00',
+    read: true,
+    starred: false,
+  },
+  {
+    id: 14,
+    folder: 'inbox',
+    from: 'Rachel Park <rachel@example.com>',
+    to: 'me@example.com',
+    subject: 'Re: Onboarding flow copy review',
+    body: `Hey!
+
+I updated the copy for screens 3–5 based on your suggestions. The CTA on the final step now reads "Start exploring" instead of "Get started" — feels less generic.
+
+Also shortened the tooltip text on the feature highlights. Let me know if you want another pass before we hand off to engineering.
+
+Cheers,
+Rachel`,
+    date: '2026-02-20T16:10:00',
+    read: true,
+    starred: false,
+  },
+  {
+    id: 15,
+    folder: 'inbox',
+    from: 'Ops Alert <alerts@infra.example.com>',
+    to: 'me@example.com',
+    subject: '[Resolved] High CPU on api-prod-03',
+    body: `Incident: High CPU utilization on api-prod-03
+Status: RESOLVED
+Duration: 12 minutes (14:32–14:44 UTC)
+
+Root cause: A runaway background job was processing a large export without pagination. The job has been terminated and a fix has been deployed to prevent recurrence.
+
+No user-facing impact was observed.
+
+— Ops Monitoring`,
+    date: '2026-02-20T14:50:00',
+    read: true,
+    starred: false,
+  },
+  {
+    id: 16,
+    folder: 'inbox',
+    from: 'David Lee <david@example.com>',
+    to: 'me@example.com',
+    subject: 'Quarterly planning doc — please review by Thursday',
+    body: `Hi,
+
+I've shared the Q2 planning doc in Google Drive. Could you review the "Engineering Priorities" section and add any items your team wants to push for?
+
+We're aiming to finalize the roadmap by Friday so we can present it at the all-hands next Monday.
+
+Link: https://docs.example.com/q2-planning
+
+Thanks!
+David`,
+    date: '2026-02-19T10:30:00',
+    read: true,
+    starred: false,
+  },
 ];
 
 let emails = [];
@@ -249,9 +354,20 @@ function saveEmails() {
   }
 }
 
+function getThreadSubject(subject) {
+  return subject.replace(/^(Re:\s*)+/i, '').trim();
+}
+
+function getThread(email) {
+  const norm = getThreadSubject(email.subject);
+  return emails
+    .filter(e => getThreadSubject(e.subject) === norm)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
 function getEmailsForFolder(folder) {
   if (folder === 'starred') {
-    return emails.filter(e => e.starred && e.folder !== 'trash');
+    return emails.filter(e => e.starred);
   }
   return emails.filter(e => e.folder === folder);
 }
@@ -275,10 +391,10 @@ function formatDate(dateStr) {
 }
 
 function updateFolderCounts() {
-  const folders = ['inbox', 'sent', 'drafts', 'trash', 'starred'];
+  const folders = ['inbox', 'sent', 'starred'];
   for (const folder of folders) {
     const count = folder === 'starred'
-      ? emails.filter(e => e.starred && e.folder !== 'trash').length
+      ? emails.filter(e => e.starred).length
       : emails.filter(e => e.folder === folder).length;
 
     const el = document.getElementById(`count-${folder}`);
@@ -355,15 +471,40 @@ function renderEmailDetail() {
   detailEl.hidden = false;
   emptyEl.hidden = true;
 
-  document.getElementById('detail-subject').textContent = email.subject;
-  document.getElementById('detail-from').textContent = email.from;
-  document.getElementById('detail-date').textContent = new Date(email.date).toLocaleString();
-  document.getElementById('detail-to').textContent = `To: ${email.to}`;
-  document.getElementById('detail-body').textContent = email.body;
+  const bodyEl = document.getElementById('detail-body');
+  const thread = getThread(email);
 
-  const starBtn = document.getElementById('btn-star-detail');
-  starBtn.innerHTML = email.starred ? '&#9733;' : '&#9734;';
-  starBtn.style.color = email.starred ? '#f5a623' : '';
+  if (thread.length > 1) {
+    document.getElementById('detail-subject').textContent = getThreadSubject(email.subject);
+    document.getElementById('detail-from').textContent = `${thread.length} messages`;
+    document.getElementById('detail-date').textContent = '';
+    document.getElementById('detail-to').textContent = '';
+
+    bodyEl.className = 'email-body email-body-thread';
+    bodyEl.innerHTML = thread.map(msg => {
+      const senderName = msg.from === 'me@example.com'
+        ? 'Me'
+        : (msg.from.includes('<') ? msg.from.split('<')[0].trim() : msg.from);
+      return `
+        <div class="thread-message">
+          <div class="thread-message-header">
+            <span class="thread-message-sender">${escapeHtml(senderName)}</span>
+            <span class="thread-message-date">${new Date(msg.date).toLocaleString()}</span>
+          </div>
+          <div class="thread-message-body">${escapeHtml(msg.body)}</div>
+        </div>
+      `;
+    }).join('');
+    bodyEl.scrollTop = bodyEl.scrollHeight;
+  } else {
+    document.getElementById('detail-subject').textContent = email.subject;
+    document.getElementById('detail-from').textContent = email.from;
+    document.getElementById('detail-date').textContent = new Date(email.date).toLocaleString();
+    document.getElementById('detail-to').textContent = `To: ${email.to}`;
+
+    bodyEl.className = 'email-body';
+    bodyEl.textContent = email.body;
+  }
 }
 
 function selectEmail(id) {
@@ -392,24 +533,90 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+const DIRECTORY_CONTACTS = [
+  { name: 'Sarah Chen', email: 'sarah.chen@example.com' },
+  { name: 'Alex Rivera', email: 'alex.rivera@example.com' },
+  { name: 'Jordan Kim', email: 'jordan.kim@example.com' },
+  { name: 'Priya Patel', email: 'priya.patel@example.com' },
+];
+
+function getContacts() {
+  const seen = new Set();
+  const contacts = [];
+
+  for (const c of DIRECTORY_CONTACTS) {
+    seen.add(c.email);
+    contacts.push({ ...c });
+  }
+
+  for (const e of emails) {
+    const entries = [e.from, e.to];
+    for (const raw of entries) {
+      if (!raw || raw === 'me@example.com') continue;
+      const match = raw.match(/^(.+?)\s*<(.+?)>$/);
+      const email = match ? match[2] : raw;
+      const name = match ? match[1].trim() : '';
+      if (seen.has(email)) continue;
+      seen.add(email);
+      contacts.push({ name, email });
+    }
+  }
+  return contacts.sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+}
+
+function renderContactSuggestions(filter) {
+  const list = document.getElementById('contact-suggestions');
+  if (!list) return;
+  const contacts = getContacts();
+  const q = filter.toLowerCase();
+  const matches = q
+    ? contacts.filter(c => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q))
+    : contacts;
+
+  if (matches.length === 0) {
+    list.hidden = true;
+    return;
+  }
+
+  list.innerHTML = matches.map(c => `
+    <button type="button" class="contact-suggestion" data-email="${escapeHtml(c.email)}">
+      <span class="contact-suggestion-name">${escapeHtml(c.name || c.email)}</span>
+      ${c.name ? `<span class="contact-suggestion-email">${escapeHtml(c.email)}</span>` : ''}
+    </button>
+  `).join('');
+  list.hidden = false;
+}
+
+function hideContactSuggestions() {
+  const list = document.getElementById('contact-suggestions');
+  if (list) list.hidden = true;
+}
+
 function openCompose(defaults = {}) {
   document.getElementById('compose-to').value = defaults.to || '';
   document.getElementById('compose-subject').value = defaults.subject || '';
   document.getElementById('compose-body').value = defaults.body || '';
   document.getElementById('compose-overlay').hidden = false;
+  hideContactSuggestions();
 }
 
 function closeCompose() {
   document.getElementById('compose-overlay').hidden = true;
   document.getElementById('compose-form').reset();
+  hideContactSuggestions();
 }
 
 function sendEmail() {
   const to = document.getElementById('compose-to').value.trim();
   const subject = document.getElementById('compose-subject').value.trim() || '(No subject)';
-  const body = document.getElementById('compose-body').value.trim();
+  let body = document.getElementById('compose-body').value.trim();
 
   if (!to) return;
+
+  const quoteIdx = body.indexOf('--- Original Message ---');
+  if (quoteIdx > 0) {
+    body = body.substring(0, quoteIdx).trim();
+  }
 
   const email = {
     id: nextId++,
@@ -427,46 +634,19 @@ function sendEmail() {
   saveEmails();
   closeCompose();
   updateFolderCounts();
-  if (currentFolder === 'sent') renderEmailList();
+  renderEmailList();
+  if (selectedEmailId) renderEmailDetail();
 
   if (_context.emit) {
     _context.emit('email:sent', { to, subject, body: body.substring(0, 200) });
   }
 }
 
-function saveDraft() {
-  const to = document.getElementById('compose-to').value.trim();
-  const subject = document.getElementById('compose-subject').value.trim() || '(No subject)';
-  const body = document.getElementById('compose-body').value.trim();
-
-  const email = {
-    id: nextId++,
-    folder: 'drafts',
-    from: 'me@example.com',
-    to: to || '',
-    subject,
-    body,
-    date: new Date().toISOString(),
-    read: true,
-    starred: false,
-  };
-
-  emails.push(email);
-  saveEmails();
-  closeCompose();
-  updateFolderCounts();
-  if (currentFolder === 'drafts') renderEmailList();
-}
-
 function deleteEmail(id) {
   const email = emails.find(e => e.id === id);
   if (!email) return;
 
-  if (email.folder === 'trash') {
-    emails = emails.filter(e => e.id !== id);
-  } else {
-    email.folder = 'trash';
-  }
+  emails = emails.filter(e => e.id !== id);
 
   if (selectedEmailId === id) {
     selectedEmailId = null;
@@ -490,6 +670,17 @@ function toggleStar(id) {
   if (selectedEmailId === id) renderEmailDetail();
 }
 
+function autoSelectFirst() {
+  const folderEmails = getEmailsForFolder(currentFolder);
+  folderEmails.sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (folderEmails.length > 0) {
+    selectEmail(folderEmails[0].id);
+  } else {
+    selectedEmailId = null;
+    renderEmailDetail();
+  }
+}
+
 function switchFolder(folder) {
   currentFolder = folder;
   selectedEmailId = null;
@@ -501,7 +692,7 @@ function switchFolder(folder) {
   });
 
   renderEmailList();
-  renderEmailDetail();
+  autoSelectFirst();
 }
 
 export function init(context = {}) {
@@ -544,28 +735,27 @@ export function init(context = {}) {
     sendEmail();
   }, { signal });
 
-  document.getElementById('btn-save-draft').addEventListener('click', saveDraft, { signal });
-
   document.getElementById('btn-reply').addEventListener('click', () => {
     const email = emails.find(e => e.id === selectedEmailId);
     if (!email) return;
-    const replyTo = email.from === 'me@example.com' ? email.to : email.from;
+
+    const thread = getThread(email);
+    const latest = thread[thread.length - 1];
+
+    const replyTo = latest.from === 'me@example.com' ? latest.to : latest.from;
     const replyAddr = replyTo.includes('<')
       ? replyTo.match(/<(.+)>/)?.[1] || replyTo
       : replyTo;
+    const subj = getThreadSubject(email.subject);
     openCompose({
       to: replyAddr,
-      subject: email.subject.startsWith('Re:') ? email.subject : `Re: ${email.subject}`,
-      body: `\n\n--- Original Message ---\nFrom: ${email.from}\nDate: ${new Date(email.date).toLocaleString()}\n\n${email.body}`,
+      subject: `Re: ${subj}`,
+      body: `\n\n--- Original Message ---\nFrom: ${latest.from}\nDate: ${new Date(latest.date).toLocaleString()}\n\n${latest.body}`,
     });
   }, { signal });
 
   document.getElementById('btn-delete-detail').addEventListener('click', () => {
     if (selectedEmailId) deleteEmail(selectedEmailId);
-  }, { signal });
-
-  document.getElementById('btn-star-detail').addEventListener('click', () => {
-    if (selectedEmailId) toggleStar(selectedEmailId);
   }, { signal });
 
   document.getElementById('btn-back').addEventListener('click', () => {
@@ -577,6 +767,30 @@ export function init(context = {}) {
 
   document.getElementById('search-input').addEventListener('input', () => {
     renderEmailList();
+  }, { signal });
+
+  const composeToInput = document.getElementById('compose-to');
+  composeToInput.addEventListener('focus', () => {
+    renderContactSuggestions(composeToInput.value);
+  }, { signal });
+  composeToInput.addEventListener('input', () => {
+    renderContactSuggestions(composeToInput.value);
+  }, { signal });
+
+  const suggestionsEl = document.getElementById('contact-suggestions');
+  if (suggestionsEl) {
+    suggestionsEl.addEventListener('mousedown', (e) => {
+      const btn = e.target.closest('.contact-suggestion');
+      if (btn) {
+        e.preventDefault();
+        composeToInput.value = btn.dataset.email;
+        hideContactSuggestions();
+        document.getElementById('compose-subject').focus();
+      }
+    }, { signal });
+  }
+  composeToInput.addEventListener('blur', () => {
+    setTimeout(hideContactSuggestions, 150);
   }, { signal });
 
   document.addEventListener('keydown', (e) => {

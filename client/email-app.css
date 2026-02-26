@@ -9,18 +9,21 @@ html, body.bespoke {
 /* Three-column grid: sidebar | email list | detail */
 .bespoke .email-layout {
   display: grid;
-  grid-template-columns: 200px 280px 1fr;
+  grid-template-columns: 200px 320px 1fr;
   height: calc(100vh - 42px);
   overflow: hidden;
 }
 
 /* Compose button in sidebar (used in embedded/module mode) */
 .bespoke .sidebar-compose {
-  padding: var(--UI-Spacing-spacing-ms) var(--UI-Spacing-spacing-ms) 0;
+  padding: var(--UI-Spacing-spacing-xs) var(--UI-Spacing-spacing-ms);
 }
 
 .bespoke .sidebar-compose .button {
   width: 100%;
+  padding-top: var(--UI-Spacing-spacing-xs);
+  padding-bottom: var(--UI-Spacing-spacing-xs);
+  font-size: 13px;
 }
 
 /* ===== FOLDER SIDEBAR ===== */
@@ -225,6 +228,10 @@ html, body.bespoke {
   font-family: var(--body-family);
 }
 
+.bespoke .email-detail-empty[hidden] {
+  display: none;
+}
+
 .bespoke .email-detail {
   display: flex;
   flex-direction: column;
@@ -289,12 +296,63 @@ html, body.bespoke {
 
 .bespoke .email-body {
   flex: 1;
+  min-height: 0;
   padding: var(--UI-Spacing-spacing-ml);
   overflow-y: auto;
   font: var(--Fonts-Body-Default-md);
   font-family: var(--body-family);
   color: var(--Colors-Text-Body-Default);
   line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* ===== THREAD VIEW ===== */
+
+.bespoke .email-body.email-body-thread {
+  white-space: normal;
+  display: flex;
+  flex-direction: column;
+  gap: var(--UI-Spacing-spacing-ms);
+  padding-bottom: 5%;
+}
+
+.bespoke .thread-message {
+  border: 1px solid var(--Colors-Stroke-Default);
+  border-radius: var(--UI-Radius-radius-s);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bespoke .thread-message-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--UI-Spacing-spacing-s);
+  padding: var(--UI-Spacing-spacing-s) var(--UI-Spacing-spacing-ml);
+  background: var(--Colors-Backgrounds-Main-Top);
+}
+
+.bespoke .thread-message-sender {
+  font: var(--Fonts-Body-Default-sm);
+  font-family: var(--body-family);
+  font-weight: 600;
+  color: var(--Colors-Text-Body-Strongest);
+}
+
+.bespoke .thread-message-date {
+  font: var(--Fonts-Body-Default-sm);
+  font-family: var(--body-family);
+  color: var(--Colors-Text-Body-Secondary);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.bespoke .thread-message-body {
+  padding: var(--UI-Spacing-spacing-ms) var(--UI-Spacing-spacing-ml);
+  font: var(--Fonts-Body-Default-md);
+  font-family: var(--body-family);
+  color: var(--Colors-Text-Body-Default);
+  line-height: 1.6;
   white-space: pre-wrap;
 }
 
@@ -316,9 +374,9 @@ html, body.bespoke {
 }
 
 .bespoke .compose-modal {
-  width: 560px;
+  width: 460px;
   max-width: 100%;
-  max-height: 80vh;
+  max-height: 60vh;
   display: flex;
   flex-direction: column;
   background: var(--Colors-Backgrounds-Main-Top);
@@ -400,7 +458,7 @@ html, body.bespoke {
 
 .bespoke .compose-body {
   resize: vertical;
-  min-height: 140px;
+  min-height: 100px;
   flex: 1;
 }
 
@@ -410,6 +468,64 @@ html, body.bespoke {
   gap: var(--UI-Spacing-spacing-s);
   padding-top: var(--UI-Spacing-spacing-ml);
   border-top: 1px solid var(--Colors-Stroke-Default);
+}
+
+/* ===== CONTACT SUGGESTIONS ===== */
+
+.bespoke .compose-to-wrapper {
+  position: relative;
+}
+
+.bespoke .contact-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--Colors-Backgrounds-Main-Default);
+  border: 1px solid var(--Colors-Stroke-Default);
+  border-radius: var(--UI-Radius-radius-s);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bespoke .contact-suggestions[hidden] {
+  display: none;
+}
+
+.bespoke .contact-suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--UI-Spacing-spacing-s);
+  padding: var(--UI-Spacing-spacing-s) var(--UI-Spacing-spacing-ms);
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.1s;
+}
+
+.bespoke .contact-suggestion:hover {
+  background: var(--Colors-Primary-Lightest);
+}
+
+.bespoke .contact-suggestion-name {
+  font: var(--Fonts-Body-Default-sm);
+  font-family: var(--body-family);
+  color: var(--Colors-Text-Body-Strongest);
+  font-weight: 500;
+}
+
+.bespoke .contact-suggestion-email {
+  font: var(--Fonts-Body-Default-sm);
+  font-family: var(--body-family);
+  color: var(--Colors-Text-Body-Secondary);
+  font-size: 12px;
 }
 
 /* ===== EMPTY STATE ===== */
